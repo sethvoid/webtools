@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * Scrape using in built curl request.
+ * @param $url
+ * @return array
+ */
 function scrape($url) {
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $url);
@@ -28,6 +34,13 @@ function scrape($url) {
     );
 }
 
+/**
+ *
+ * Returns hash of site content, please remember it removes scripts and style tags.
+ * @param $html
+ * @param $dev
+ * @return string
+ */
 function getHash($html, $dev) {
     $html = preg_replace('#<script(.*?)>(.*?)</script>#is', '',$html);
     $html = preg_replace('#<style(.*?)>(.*?)</style>#is', '',$html);
@@ -41,12 +54,58 @@ function getHash($html, $dev) {
     return md5($html);
 }
 
+function allowedTypes($extention) {
+    if ($extention == '') {
+        return true;
+    }
+    $excluded = [
+        'html',
+        'php',
+        'asp',
+        'aspx',
+        'jsp',
+        'cfm',
+        'jsx',
+        'shtml',
+        'rhtml'
+    ];
+
+    return in_array($extention, $excluded);
+}
+
 $dev = in_array('--dev', $argv);
 $compare = in_array('--compare', $argv);
-$baseAddress = readline('Please enter address (do not include protocal) :');
+$argumentBaseAddress = null;
+$argumentBaseFile = null;
+
+foreach ($argv as $arg) {
+    if (stripos($arg, '--url') !== false) {
+        $splitArg = explode('=', $arg);
+        if (isset($splitArg[1]) && strlen($splitArg[1]) > 1) {
+            $argumentBaseAddress = $splitArg[1];
+        }
+    }
+
+    if (stripos($arg, '--file') !== false) {
+        $splitArg = explode('=', $arg);
+        if (isset($splitArg[1]) && strlen($splitArg[1]) > 1) {
+            $argumentBaseFile = $splitArg[1];
+        }
+    }
+}
+if (!empty($argumentBaseAddress)) {
+    $baseAddress = $argumentBaseAddress;
+} else {
+    $baseAddress = readline('Please enter address (do not include protocal) :');
+}
+
 $comparisonFile = null;
 if ($compare) {
-    $comparisonFile = readline('Please enter comparison file: ');
+    if (!empty($argumentBaseFile)) {
+        $comparisonFile = $argumentBaseFile;
+    } else {
+        $comparisonFile = readline('Please enter comparison file: ');
+    }
 }
 $url = 'https://' . $baseAddress . '/sitemap.xml';
 $xml = file_get_contents($url);
@@ -71,7 +130,8 @@ foreach ($urls as $url) {
         $potentialLinks = explode('href="', $scrape['response']);
         foreach ($potentialLinks as $linkalue) {
             $linkalue = substr($linkalue, 0, strpos($linkalue, '"'));
-            if (stripos($linkalue, $baseAddress) !== false && !isset($urls[$linkalue])) {
+            $ext = pathinfo($linkalue, PATHINFO_EXTENSION);
+            if (stripos($linkalue, $baseAddress) !== false && !isset($urls[$linkalue]) && allowedTypes($ext)) {
                 $scrape2 = scrape($linkalue);
                 if ($scrape2['code'] == 200) {
                     echo 'Generating Linked hash ' . $linkalue .PHP_EOL;
@@ -87,6 +147,7 @@ foreach ($urls as $url) {
         break;
     }
 }
+
 if ($compare) {
     echo 'starting comparison' . PHP_EOL;
     $lost = [];

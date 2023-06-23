@@ -22,3 +22,6 @@ running a comparison with the current version, this script is useful for identif
 
 #### photo ripper
 Takes a page, scrapes it for image links, goes to the links and downloads the images, removes any meta data from the images, and saves them to a location. 
+
+#### Disclaimer 
+As always with all my stuff, please don't use it for anything illegal, and don't use it for goverment or corperate spying. 
