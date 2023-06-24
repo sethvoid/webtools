@@ -1,4 +1,6 @@
 <?php
+echo file_get_contents('banner.txt');
+echo PHP_EOL . PHP_EOL;
 
 /**
  * Scrape using in built curl request.
@@ -58,6 +60,7 @@ function allowedTypes($extention) {
     if ($extention == '') {
         return true;
     }
+    
     $excluded = [
         'html',
         'php',
