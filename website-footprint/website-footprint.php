@@ -193,7 +193,7 @@ if ($compare) {
             $reportString .= '[' . $url . ']' . PHP_EOL;
         }
 
-        file_put_contents('processed/change-report-' . date('d-m-Y') . '.txt', $reportString);
+        file_put_contents('../processed/change-report-'  . $baseAddress . '-' . date('d-m-Y') . '.txt', $reportString);
     } catch (Exception $ex) {
         echo $ex->getMessage();
     }
@@ -201,7 +201,7 @@ if ($compare) {
     echo 'saving content' . PHP_EOL;
 
     $jsonString = json_encode($footprints);
-    file_put_contents('processed/' . date('Y-m-d-H-i-s') . '.json', $jsonString);
+    file_put_contents('../processed/wsfp-' . $baseAddress . '-' . date('Y-m-d-H-i-s') . '.json', $jsonString);
 }
 echo 'Finished.' . PHP_EOL;
 

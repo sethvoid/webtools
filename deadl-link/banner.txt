@@ -1,0 +1,22 @@
+
+                         _                _       _ _       _
+                      __| | ___  __ _  __| |     | (_)_ __ | | __
+                     / _` |/ _ \/ _` |/ _` |_____| | | '_ \| |/ /
+                    | (_| |  __/ (_| | (_| |_____| | | | | |   <
+                     \__,_|\___|\__,_|\__,_|     |_|_|_| |_|_|\_\
+
+
+                      (c) 2021-2022 by Seth Wallace / Maxproton
+                    <maxpr0t0n@protonmail.com> https://github.com/sethvoid
+                     Licensed under Apache License 2.0 (see LICENSE file)
+
+                    Please do not use in military or for illegal purposes.
+                 (This is the wish of the author and non-binding. Many people working
+                in these organizations do not care for laws and ethics anyways.
+                    You are not one of the "good" ones if you ignore this.)
+
++-----------------------------------------------------------------------------------------+
++  Arguments                                                                              +
++ ----------                                                                              +
++ --url=[url] specify the url to check                                                    +
++-----------------------------------------------------------------------------------------+

@@ -1,4 +1,6 @@
 <?php
+echo file_get_contents('banner.txt');
+echo PHP_EOL . PHP_EOL;
 
 function scrape($url) {
     $curl = curl_init();
@@ -28,9 +30,20 @@ function scrape($url) {
         'response' => $response
     );
 }
+$url = null;
+foreach ($argv as $arg) {
+    if (stripos($arg, '--url') !== false) {
+        $urlSplit = explode('=', $arg);
+        $url = $urlSplit[1] ?? null;
+    }
+}
 
+if (!empty($url)) {
+    $baseAddress = $url;
+} else {
+    $baseAddress = readline('Please enter address (do not include protocal) :');
+}
 
-$baseAddress = readline('Please enter address (do not include protocal) :');
 $url = 'https://' . $baseAddress . '/sitemap.xml';
 $xml = file_get_contents($url);
 $obj = simplexml_load_string($xml);
@@ -98,6 +111,6 @@ if (!empty($error)) {
         $fileString .= $url . ' | return status ' . $code . PHP_EOL;
     }
 }
-file_put_contents('report-' . date('d-m-Y') . '.txt', $fileString);
+file_put_contents('../processed/report-' . $baseAddress . '-' . date('d-m-Y') . '.txt', $fileString);
 
 echo 'Script finished.' . PHP_EOL;
