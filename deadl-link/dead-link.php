@@ -1,48 +1,9 @@
 <?php
-echo file_get_contents('banner.txt');
-echo PHP_EOL . PHP_EOL;
-
-function scrape($url) {
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_HEADER , false);
-    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 0);
-    curl_setopt($curl, CURLOPT_TIMEOUT, 2);
-    $response = curl_exec($curl);
-    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
-    $header = substr($response, 0, $header_size);
-    $body = substr($response, $header_size);
-    curl_close($curl);
-
-    if ($httpCode == 0) {
-        $httpCode = 404;
-    }
-
-    return array(
-        'code' => $httpCode,
-        'header' => $header,
-        'response_size' => strlen($response),
-        'response' => $response
-    );
-}
+require_once(__DIR__ . '/../helper/WebHelper.php');
+$webHelper = new WebHelper($argv);
+$webHelper->displayBanner(__DIR__);
 $url = null;
-foreach ($argv as $arg) {
-    if (stripos($arg, '--url') !== false) {
-        $urlSplit = explode('=', $arg);
-        $url = $urlSplit[1] ?? null;
-    }
-}
-
-if (!empty($url)) {
-    $baseAddress = $url;
-} else {
-    $baseAddress = readline('Please enter address (do not include protocal) :');
-}
+$baseAddress = $webHelper->opts['--url'] ?? readline('Please enter address (do not include protocal) :');
 
 $url = 'https://' . $baseAddress . '/sitemap.xml';
 $xml = file_get_contents($url);
@@ -51,17 +12,16 @@ $obj = simplexml_load_string($xml);
 $amount = count($obj);
 echo 'Identified ' . $amount . ' urls in site map' . PHP_EOL;
 
-echo 'Running diagonstics to establish what bad looks like' . PHP_EOL;
-$test1 = scrape('https://' . $baseAddress . '/blahblah');
-$test2 = scrape('https://' . $baseAddress . '/blahbla');
-$test3 = scrape('https://' . $baseAddress . '/blahbl');
-$test4 = scrape('https://' . $baseAddress . '/blahb');
+echo 'Running quick diagnostic to establish what bad looks like..' . PHP_EOL;
+$badArray = [];
+for ($i=0; $i < 4; $i++) {
+    $badArray[] = $webHelper->scrape('https://' . $baseAddress . '/' . md5(rand(1, 1000)));
+    sleep(1);
+}
 
-
-echo 'TEST1: ' . $test1['code'] . '[' . $test1['response_size'] . PHP_EOL;
-echo 'TEST2: ' . $test2['code'] . '[' . $test2['response_size'] . PHP_EOL;
-echo 'TEST3: ' . $test3['code'] . '[' . $test3['response_size'] . PHP_EOL;
-echo 'TEST4: ' . $test4['code'] . '[' . $test4['response_size'] . PHP_EOL;
+foreach ($badArray as $testNo => $badResult) {
+    echo "Test$testNo: " . $badResult['code'] . '[' . $badResult['response_size'] . ']'. PHP_EOL;
+}
 
 $error = [];
 
@@ -75,7 +35,7 @@ foreach ($obj as $loc) {
 }
 
 foreach ($urls as $url) {
-    $scrape = scrape($url);
+    $scrape = $webHelper->scrape($url);
     echo 'Checking ' . $url . '(' . $scrape['response_size'] . ')'.PHP_EOL;
 
 
@@ -94,7 +54,7 @@ foreach ($urls as $url) {
     }
 }
 foreach ($additional as $source => $links) {
-    $scrape = scrape($links);
+    $scrape = $webHelper->scrape($links);
     if ($scrape['code'] != 200) {
         $error[$links] = $scrape['code'] . '(source url:' . $source . ')';
     }
@@ -111,6 +71,10 @@ if (!empty($error)) {
         $fileString .= $url . ' | return status ' . $code . PHP_EOL;
     }
 }
-file_put_contents('../processed/report-' . $baseAddress . '-' . date('d-m-Y') . '.txt', $fileString);
+$webHelper->saveReport(
+    $baseAddress . '-' . date('d-m-Y'),
+    $fileString,
+    'txt',
+);
 
 echo 'Script finished.' . PHP_EOL;
