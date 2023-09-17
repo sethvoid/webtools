@@ -108,6 +108,10 @@ class WebHelper
 
     public function saveReport(string $filename, string $data, string $ext): void
     {
+        if (!file_exists($this->savePath)) {
+            mkdir($this->savePath);
+        }
+        
         try {
             file_put_contents($this->savePath . $filename . '.' . $ext, $data);
         } catch (Exception $ex) {
