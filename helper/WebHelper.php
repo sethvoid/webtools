@@ -90,7 +90,7 @@ class WebHelper
         $html = strip_tags($html);
         $html = preg_replace('/\s+/', '', $html);
 
-        if ($this->devModedev) {
+        if ($this->devMode) {
             file_put_contents('processed/' . md5($html) . '.txt', $html);
         }
 
@@ -111,7 +111,7 @@ class WebHelper
         if (!file_exists($this->savePath)) {
             mkdir($this->savePath);
         }
-        
+
         try {
             file_put_contents($this->savePath . $filename . '.' . $ext, $data);
         } catch (Exception $ex) {
